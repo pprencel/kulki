@@ -125,8 +125,8 @@ function checkSheet(){                                                          
   var score = document.querySelector(".score"),                                 // Element wyświetlający wynik
       i = 0,
       j = 0,
-      color = 0;
-
+      color = 0,
+      tempTotalScore = totalScore;                                              // Zmienna pomocnicza trzymająca ilość punktów przed sprawdzaniem
 
       function clearThisColor(){                                                // Funkcja znajdująca różnice miedzy główną tablicą a tablicą zaiwrającą kolory w rzędach
         var i = 0,
@@ -141,169 +141,170 @@ function checkSheet(){                                                          
         }
       }
 
-        for(color = 1; color <= 5; color++){                                    // Przeglądaj główną tablicę dla kolejnych kolorów
-          for(i = 0; i < SheetSize; i++){
-            for(j = 0; j < SheetSize; j++){
-              if(tab[i][j] == color) {                                          // Jeśli miejsce w tablicy ma taką samą wartość co poszukiwany kolor
-                checkThisColor(j,i,color);                                      // To użyj funkcji sprawdzającej czy można skreślić
+      function checkThisColor(x, y, color){                                     // Sprawdza dla konkretnej komórki czy ta aby nie wchodzi w jakiś rząd
+        var ball =  document.querySelectorAll(".ball"),
+            ballAmount = ball.length,
+            i,j    =  0,
+            counterB = 1, counterT = 1, counterR = 1, counterL = 1, counterRT = 1, counterRB = 1, counterLT = 1, counterLB = 1,
+            slopeR = 0, slopeL = 0, vertical = 0, horizontall = 0;
+            tabTemp[y][x] = color;                                              // Do dany kolor do wablicy pomocniczej
+
+
+
+            function findDifference(_color){                                    // Funkcja znajdująca różnicę między tablicą tymczasową a tablicą kolorów
+              var i = 0,                                                        // Tablica kolorów przechowuje wszystkie komórki danego koloru ustawione w rzędy
+                  j = 0;                                                        // Tablica tymczasowa przechowuje komórki danego koloru ustawione w rząd
+              for(i = 0; i < SheetSize; i++){
+                for(j = 0; j < SheetSize; j++){
+                  if(tabTemp[i][j] == _color) tabColorInRow[i][j] = _color;
+                }
               }
             }
-          }
-          clearThisColor();                                                     // Funkcja usuwająca z glownej tablicy kulki które są do usunięcia
-          zeroTab(tabColorInRow);                                               // Czyści tablice przechowującą kulki w danym kolorze stojące w rzedzie >= 5
-          ballPositions();                                                      // Operacje na warstwie graficznej
-        }
-        score.innerHTML = "Wynik to: "+totalScore;                              // Aktualizacja wyniku
 
+            //      PION
+            function bottom(_x, _y){
+              _y++;                                                             // Idzie o jedną pozycje w dół
 
-  function checkThisColor(x, y, color){
-    var ball =  document.querySelectorAll(".ball"),
-        ballAmount = ball.length,
-        i,j    =  0,
-        counterB = 1, counterT = 1, counterR = 1, counterL = 1, counterRT = 1, counterRB = 1, counterLT = 1, counterLB = 1,
-        slopeR = 0, slopeL = 0, vertical = 0, horizontall = 0;
-        tabTemp[y][x] = color;                                                  // Do dany kolor do wablicy pomocniczej
+              if(checkThisBox(_y, _x)){                                         // Spawdza czy nie wychodzi poza zakres
+                if(tab[_y][_x] == color){                                       // Jeżeli w danym polu jest pożądany kolor
+                  tabTemp[_y][_x] = color;                                      // To dodaje do tablicy tymczasowej na tej samej pozycj te sam kolor
+                  counterB++;                                                   // Liczni w dół++
+                  bottom(_x,_y);                                                // Rekurencyjne wywołanie tej funkcji
+                }
+              }
+              return counterB;                                                  // Zwraca ilość komórek w dół
+            }
 
+            function top(_x, _y){
+              _y--;                                                             // Idzie o jedną pozycje do góry
 
+              if(checkThisBox(_y, _x)){                                         // Sprawdza czy nie wychodzi poza zakres
+                if(tab[_y][_x] == color){                                       // Jeżeli w danym polu jest pożądany kolor
+                  tabTemp[_y][_x] = color;                                      // To dodaje do tablicy tymczasowej na tej samej pozycj te sam kolor
+                  counterT++;                                                   // Liczni w góre++
+                  top(_x,_y);                                                   // Rekurencyjne wywołanie tej funkcji
+                }
+              }
+              return counterT;                                                  // Zwraca ilość komórek do góry
+            }
 
-        function findDifference(_color){                                        // Funkcja znajdująca różnicę między tablicą tymczasową a tablicą kolorów
-          var i = 0,                                                            // Tablica kolorów przechowuje wszystkie komórki danego koloru ustawione w rzędy
-              j = 0;                                                            // Tablica tymczasowa przechowuje komórki danego koloru ustawione w rząd
-          for(i = 0; i < SheetSize; i++){
-            for(j = 0; j < SheetSize; j++){
-              if(tabTemp[i][j] == _color) tabColorInRow[i][j] = _color;
+            vertical = bottom(x, y) + top(x, y) - 1;                            // Zmienna ustalająca ile jest kulek danego koloru w pionie
+            // Jeśli jest więcej niż 5 ? to idz do funkcji znajdującą różnicę między tablicami a jak nie : to wyczyść tablice tymczasową
+            vertical >= 5 ? findDifference(color) : zeroTab(tabTemp);
+
+            //            POZIOM
+            function right(_x, _y){
+              _x++;                                                             // Idzie o jedną pozycje w prawo
+
+              if(checkThisBox(_y, _x)){                                         // Sprawdza czy nie wychodzi poza zakres
+                if(tab[_y][_x] == color){                                       // Jeżeli w danym polu jest pożądany kolor
+                  tabTemp[_y][_x] = color;                                      // To dodaje do tablicy tymczasowej na tej samej pozycj te sam kolor
+                  counterR++;                                                   // Liczni w prawo++
+                  right(_x,_y);                                                 // Rekurencyjne wywołanie tej funkcji
+                }
+              }
+              return counterR;                                                  // Zwraca ilość komórek w prawo
+            }
+
+            function left(_x, _y){
+              _x--;                                                             // Idzie o jedną pozycje w lewo
+
+              if(checkThisBox(_y, _x)){                                         // Sprawdza czy nie wychodzi poza zakres
+                if(tab[_y][_x] == color){                                       // Jeżeli w danym polu jest pożądany kolor
+                  tabTemp[_y][_x] = color;                                      // To dodaje do tablicy tymczasowej na tej samej pozycj te sam kolor
+                  counterL++;                                                   // Liczni w lewo++
+                  left(_x,_y);                                                  // Rekurencyjne wywołanie tej funkcji
+                }
+              }
+              return counterL;                                                  // Zwraca ilość komórek w lewo
+            }
+
+            horizontall = right(x, y) + left(x, y) - 1;
+            // Jeśli jest więcej niż 5 ? to idz do funkcji znajdującą różnicę między tablicami a jak nie : to wyczyść tablice tymczasową
+            horizontall >= 5 ? findDifference(color) : zeroTab(tabTemp);
+
+            //      SKOS Prawy
+            function rightTop(_x, _y){
+              _x++;                                                             // Idzie o jedną pozycje w prawo
+              _y--;                                                             // Idzie o jedną pozycje w górę
+
+              if(checkThisBox(_y, _x)){                                         // Sprawdza czy nie wychodzi poza zakres
+                if(tab[_y][_x] == color){                                       // Jeżeli w danym polu jest pożądany kolor
+                  tabTemp[_y][_x] = color;                                      // To dodaje do tablicy tymczasowej na tej samej pozycj te sam kolor
+                  counterRT++;                                                  // Liczni w prawo-góra++
+                  rightTop(_x,_y);                                              // Rekurencyjne wywołanie tej funkcji
+                }
+              }
+              return counterRT;                                                 // Zwraca ilość komórek w prawo-góra
+            }
+
+            function leftBottom(_x, _y){
+              _x--;                                                             // Idzie o jedną pozycje w lewo
+              _y++;                                                             // Idzie o jedną pozycje w dół
+
+              if(checkThisBox(_y, _x)){                                         // Sprawdza czy nie wychodzi poza zakres
+                if(tab[_y][_x] == color){                                       // Jeżeli w danym polu jest pożądany kolor
+                  tabTemp[_y][_x] = color;                                      // To dodaje do tablicy tymczasowej na tej samej pozycj te sam kolor
+                  counterLB++;                                                  // Liczni w lewo-dół++
+                  leftBottom(_x,_y);                                            // Rekurencyjne wywołanie tej funkcji
+                }
+              }
+              return counterLB;                                                 // Zwraca ilość komórek w lewy-dół
+            }
+
+            slopeR = rightTop(x, y) + leftBottom(x, y) - 1;
+            // Jeśli jest więcej niż 5 ? to idz do funkcji znajdującą różnicę między tablicami a jak nie : to wyczyść tablice tymczasową
+            slopeR >= 5 ? findDifference(color) : zeroTab(tabTemp);
+
+            //      SKOS LEWY
+            function rightBottom(_x, _y){
+              _x++;                                                             // Idzie o jedną pozycje w prawo
+              _y++;                                                             // Idzie o jedną pozycje w dół
+
+              if(checkThisBox(_y, _x)){                                         // Sprawdza czy nie wychodzi poza zakres
+                if(tab[_y][_x] == color){                                       // Jeżeli w danym polu jest pożądany kolor
+                  tabTemp[_y][_x] = color;                                      // To dodaje do tablicy tymczasowej na tej samej pozycj te sam kolor
+                  counterRB++;                                                  // Liczni w prawy-dół++
+                  rightBottom(_x,_y);                                           // Rekurencyjne wywołanie tej funkcji
+                }
+              }
+              return counterRB;                                                 // Zwraca ilość komórek w prawo-dół
+            }
+
+            function leftTop(_x, _y){
+              _x--;                                                             // Idzie o jedną pozycje w lewo
+              _y--;                                                             // Idzie o jedną pozycje w dół
+
+              if(checkThisBox(_y, _x)){                                         // Sprawdza czy nie wychodzi poza zakres
+                if(tab[_y][_x] == color){                                       // Jeżeli w danym polu jest pożądany kolor
+                  tabTemp[_y][_x] = color;                                      // To dodaje do tablicy tymczasowej na tej samej pozycj te sam kolor
+                  counterLT++;                                                  // Liczni w lewa-góra++
+                  leftTop(_x,_y);                                               // Rekurencyjne wywołanie tej funkcji
+                }
+              }
+              return counterLT;                                                 // Zwraca ilość komórek w lewy-góra
+            }
+
+            slopeL = rightBottom(x, y) + leftTop(x, y) - 1;
+            // Jeśli jest więcej niż 5 ? to idz do funkcji znajdującą różnicę między tablicami a jak nie : to wyczyść tablice tymczasową
+            slopeL >= 5 ? findDifference(color) : zeroTab(tabTemp);
+      }
+
+      for(color = 1; color <= 5; color++){                                      // Przeglądaj główną tablicę dla kolejnych kolorów
+        for(i = 0; i < SheetSize; i++){
+          for(j = 0; j < SheetSize; j++){
+            if(tab[i][j] == color) {                                            // Jeśli miejsce w tablicy ma taką samą wartość co poszukiwany kolor
+              checkThisColor(j,i,color);                                        // To użyj funkcji sprawdzającej czy można skreślić
             }
           }
         }
-
-        //      PION
-        function bottom(_x, _y){
-          _y++;                                                                 // Idzie o jedną pozycje w dół
-
-          if(checkThisBox(_y, _x)){                                             // Spawdza czy nie wychodzi poza zakres
-            if(tab[_y][_x] == color){                                           // Jeżeli w danym polu jest pożądany kolor
-              tabTemp[_y][_x] = color;                                          // To dodaje do tablicy tymczasowej na tej samej pozycj te sam kolor
-              counterB++;                                                       // Liczni w dół++
-              bottom(_x,_y);                                                    // Rekurencyjne wywołanie tej funkcji
-            }
-          }
-          return counterB;                                                      // Zwraca ilość komórek w dół
-        }
-
-        function top(_x, _y){
-          _y--;                                                                 // Idzie o jedną pozycje do góry
-
-          if(checkThisBox(_y, _x)){                                             // Sprawdza czy nie wychodzi poza zakres
-            if(tab[_y][_x] == color){                                           // Jeżeli w danym polu jest pożądany kolor
-              tabTemp[_y][_x] = color;                                          // To dodaje do tablicy tymczasowej na tej samej pozycj te sam kolor
-              counterT++;                                                       // Liczni w góre++
-              top(_x,_y);                                                       // Rekurencyjne wywołanie tej funkcji
-            }
-          }
-          return counterT;                                                      // Zwraca ilość komórek do góry
-        }
-
-        vertical = bottom(x, y) + top(x, y) - 1;                                // Zmienna ustalająca ile jest kulek danego koloru w pionie
-        // Jeśli jest więcej niż 5 ? to idz do funkcji znajdującą różnicę między tablicami a jak nie : to wyczyść tablice tymczasową
-        vertical >= 5 ? findDifference(color) : zeroTab(tabTemp);
-
-        //            POZIOM
-        function right(_x, _y){
-          _x++;                                                                 // Idzie o jedną pozycje w prawo
-
-          if(checkThisBox(_y, _x)){                                             // Sprawdza czy nie wychodzi poza zakres
-            if(tab[_y][_x] == color){                                           // Jeżeli w danym polu jest pożądany kolor
-              tabTemp[_y][_x] = color;                                          // To dodaje do tablicy tymczasowej na tej samej pozycj te sam kolor
-              counterR++;                                                       // Liczni w prawo++
-              right(_x,_y);                                                     // Rekurencyjne wywołanie tej funkcji
-            }
-          }
-          return counterR;                                                      // Zwraca ilość komórek w prawo
-        }
-
-        function left(_x, _y){
-          _x--;                                                                 // Idzie o jedną pozycje w lewo
-
-          if(checkThisBox(_y, _x)){                                             // Sprawdza czy nie wychodzi poza zakres
-            if(tab[_y][_x] == color){                                           // Jeżeli w danym polu jest pożądany kolor
-              tabTemp[_y][_x] = color;                                          // To dodaje do tablicy tymczasowej na tej samej pozycj te sam kolor
-              counterL++;                                                       // Liczni w lewo++
-              left(_x,_y);                                                      // Rekurencyjne wywołanie tej funkcji
-            }
-          }
-          return counterL;                                                      // Zwraca ilość komórek w lewo
-        }
-
-        horizontall = right(x, y) + left(x, y) - 1;
-        // Jeśli jest więcej niż 5 ? to idz do funkcji znajdującą różnicę między tablicami a jak nie : to wyczyść tablice tymczasową
-        horizontall >= 5 ? findDifference(color) : zeroTab(tabTemp);
-
-        //      SKOS Prawy
-        function rightTop(_x, _y){
-          _x++;                                                                 // Idzie o jedną pozycje w prawo
-          _y--;                                                                 // Idzie o jedną pozycje w górę
-
-          if(checkThisBox(_y, _x)){                                             // Sprawdza czy nie wychodzi poza zakres
-            if(tab[_y][_x] == color){                                           // Jeżeli w danym polu jest pożądany kolor
-              tabTemp[_y][_x] = color;                                          // To dodaje do tablicy tymczasowej na tej samej pozycj te sam kolor
-              counterRT++;                                                      // Liczni w prawo-góra++
-              rightTop(_x,_y);                                                  // Rekurencyjne wywołanie tej funkcji
-            }
-          }
-          return counterRT;                                                     // Zwraca ilość komórek w prawo-góra
-        }
-
-        function leftBottom(_x, _y){
-          _x--;                                                                 // Idzie o jedną pozycje w lewo
-          _y++;                                                                 // Idzie o jedną pozycje w dół
-
-          if(checkThisBox(_y, _x)){                                             // Sprawdza czy nie wychodzi poza zakres
-            if(tab[_y][_x] == color){                                           // Jeżeli w danym polu jest pożądany kolor
-              tabTemp[_y][_x] = color;                                          // To dodaje do tablicy tymczasowej na tej samej pozycj te sam kolor
-              counterLB++;                                                      // Liczni w lewo-dół++
-              leftBottom(_x,_y);                                                // Rekurencyjne wywołanie tej funkcji
-            }
-          }
-          return counterLB;                                                     // Zwraca ilość komórek w lewy-dół
-        }
-
-        slopeR = rightTop(x, y) + leftBottom(x, y) - 1;
-        // Jeśli jest więcej niż 5 ? to idz do funkcji znajdującą różnicę między tablicami a jak nie : to wyczyść tablice tymczasową
-        slopeR >= 5 ? findDifference(color) : zeroTab(tabTemp);
-
-        //      SKOS LEWY
-        function rightBottom(_x, _y){
-          _x++;                                                                 // Idzie o jedną pozycje w prawo
-          _y++;                                                                 // Idzie o jedną pozycje w dół
-
-          if(checkThisBox(_y, _x)){                                             // Sprawdza czy nie wychodzi poza zakres
-            if(tab[_y][_x] == color){                                           // Jeżeli w danym polu jest pożądany kolor
-              tabTemp[_y][_x] = color;                                          // To dodaje do tablicy tymczasowej na tej samej pozycj te sam kolor
-              counterRB++;                                                      // Liczni w prawy-dół++
-              rightBottom(_x,_y);                                               // Rekurencyjne wywołanie tej funkcji
-            }
-          }
-          return counterRB;                                                     // Zwraca ilość komórek w prawo-dół
-        }
-
-        function leftTop(_x, _y){
-          _x--;                                                                 // Idzie o jedną pozycje w lewo
-          _y--;                                                                 // Idzie o jedną pozycje w dół
-
-          if(checkThisBox(_y, _x)){                                             // Sprawdza czy nie wychodzi poza zakres
-            if(tab[_y][_x] == color){                                           // Jeżeli w danym polu jest pożądany kolor
-              tabTemp[_y][_x] = color;                                          // To dodaje do tablicy tymczasowej na tej samej pozycj te sam kolor
-              counterLT++;                                                      // Liczni w lewa-góra++
-              leftTop(_x,_y);                                                   // Rekurencyjne wywołanie tej funkcji
-            }
-          }
-          return counterLT;                                                     // Zwraca ilość komórek w lewy-góra
-        }
-
-        slopeL = rightBottom(x, y) + leftTop(x, y) - 1;
-        // Jeśli jest więcej niż 5 ? to idz do funkcji znajdującą różnicę między tablicami a jak nie : to wyczyść tablice tymczasową
-        slopeL >= 5 ? findDifference(color) : zeroTab(tabTemp);
-  }
+        clearThisColor();                                                       // Funkcja usuwająca z glownej tablicy kulki które są do usunięcia
+        zeroTab(tabColorInRow);                                                 // Czyści tablice przechowującą kulki w danym kolorze stojące w rzedzie >= 5
+        ballPositions();                                                        // Operacje na warstwie graficznej
+      }
+      score.innerHTML = "Wynik to: "+totalScore;                                // Aktualizacja wyniku
+      if(tempTotalScore != totalScore) return true;
+      else return false;
 }
 
 function randBall(){
@@ -329,6 +330,8 @@ function ballMove(xNew, yNew, xOld, yOld, _activeBall){                         
       road = [],                                                                // Tablica w której będą kolejne etapy drogi
       roadExist = false;                                                        // Flaga przechowująca informacje czy droga istnieje
 
+      if(xNew == xOld && yNew == yOld) return false;                            // Jeśli kliknę w tę samą komórkę
+      if(tab[yNew][xNew] != 0) return false;                                    // Jeśli dana komórka jest już zajętę
   function Point(posY, posX, step) {                                            // Funkcja tworząca objetk
         this.posY = posY;
         this.posX = posX;
@@ -495,10 +498,13 @@ function ballMove(xNew, yNew, xOld, yOld, _activeBall){                         
         tab[yOld][xOld] = 0;                                                    // W polu startowym wartość 0
         zeroTab(tabTemp);                                                       // Czyści tablicę pomocniczą (ta z odwiedzonymi polami i przeszkodami)
         zeroTab(road);                                                          // Czyści tablicę zawierającą droge
-        randBall();                                                             // Losowanie trzech kolejnych kulek
-        randBall();
-        randBall();
-      }, delayTime*(road.length));                                              // Czeka tyle czasu ile potrzeba na animacje ruchu kulki
+
+        if(checkSheet() == false){                                              // Jeśli nie nastąpiła zmiana wyniku to:
+          randBall();                                                           // Losowanie trzech kulek
+          randBall();
+          randBall();
+        }
+      }, delayTime*(road.length+1));                                              // Czeka tyle czasu ile potrzeba na animacje ruchu kulki
   }
 
     pointsToCheck.push(new Point(yOld, xOld, tabTemp[yOld][xOld]));             // Inicjacja - ustawienie na pierwszą komórkę do sprawdzenia kmoroke z ktorej wychodzimy
@@ -515,7 +521,6 @@ function ballMove(xNew, yNew, xOld, yOld, _activeBall){                         
       console.log("ruch niemożliwy");                                           // Jeśli nie ma drogi to wypisz że ruch jest nie możliwy
     }
 }
-
 ////////////////// Dwie funkcje odsługujące eventy klikane ////////////////////
 
 function startGame(){                                                           // Funkcja obsługująca start gry
@@ -568,13 +573,12 @@ function clickSelector(){                                                       
           }else if(e.target.className == "box" ){                               // Jeśli klikne box
             switch (ballState) {
               case true:                                                        // Była kliknięta wcześniej
-                  nameNew = e.target.getAttribute("name");                      // Nazwa siatki w której bedzie znajdować się kliknięta
-                  xNew = nameNew.substring(0, 1);                               // Pozycja X
-                  yNew = nameNew.substring(2,3);                                // Pozycja Y
-                  if(nameActive == nameNew) break;                              // Jeśli kliknę w tą samą komórkę w której jest aktywna kulka to nic się nie dzieje
-                  ballMove(xNew, yNew, xActive, yActive, activeBall);           // Funkcja przemieszczająca
-                  activeBall.className = "ball"+tab[yActive][xActive];          // 'kliknięta' dostaje klase jaką miała przed kliknięciem
-                  ballState = false;                                            // Kulka nieaktywna
+                    nameNew = e.target.getAttribute("name");                    // Nazwa siatki w której bedzie znajdować się kliknięta
+                    xNew = nameNew.substring(0, 1);                             // Pozycja X
+                    yNew = nameNew.substring(2,3);                              // Pozycja Y
+                    ballMove(xNew, yNew, xActive, yActive, activeBall);         // Funkcja przemieszczająca
+                    activeBall.className = "ball"+tab[yActive][xActive];        // 'kliknięta' dostaje klase jaką miała przed kliknięciem
+                    ballState = false;                                          // Kulka nieaktywna
                 break;
               case false:                                                       // I nie był cześniej kliknięty
                   // To nic (sytuacja gdy nie mam zaznaczonej kulki i klikam w pusty box)
