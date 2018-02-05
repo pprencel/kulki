@@ -332,6 +332,7 @@ function ballMove(xNew, yNew, xOld, yOld, _activeBall){                         
 
       if(xNew == xOld && yNew == yOld) return false;                            // Jeśli kliknę w tę samą komórkę
       if(tab[yNew][xNew] != 0) return false;                                    // Jeśli dana komórka jest już zajętę
+
   function Point(posY, posX, step) {                                            // Funkcja tworząca objetk
         this.posY = posY;
         this.posX = posX;

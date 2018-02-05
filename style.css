@@ -11,10 +11,17 @@
   -o-transition: all, 0.5s, linear;
   -ms-transition: all, 0.5s, linear;
 }
+.container{
+  width: 700px;
+  height: 700px;
+  border: 2px solid grey;
+  margin: 0 auto;
+  display: block;
+}
 .row {
    margin: 0;
    padding: 0;
-
+   display: flex;
    &amp::after {
        content: '';
        clear: both;
@@ -38,11 +45,7 @@ body {
   margin: 0 auto;
 }
 .main {
-  width: 700px;
-  height: 700px;
-  border: 2px solid grey;
-  margin: 0 auto;
-  display: flex;
+
 }
 .box, .boxForFuture{
   width: 70px;
