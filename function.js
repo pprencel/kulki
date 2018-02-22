@@ -581,7 +581,7 @@ function clickSelector(){                                                       
                     activeBall.className = "ball"+tab[yActive][xActive];        // 'kliknięta' dostaje klase jaką miała przed kliknięciem
                     ballState = false;                                          // Kulka nieaktywna
                 break;
-              case false:                                                       // I nie był cześniej kliknięty
+              case false:                                                       // I nie był wcześniej kliknięty
                   // To nic (sytuacja gdy nie mam zaznaczonej kulki i klikam w pusty box)
                 break;
               default:
